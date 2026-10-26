@@ -31,7 +31,7 @@ def ask(question: str) -> str:
     else:
         print(
             f"[tokens] input={usage.prompt_token_count}, "
-            f"output={usage.response_token_count}"
+            f"output={usage.candidates_token_count}"
         )
 
     return response.text

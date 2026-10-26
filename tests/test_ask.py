@@ -6,7 +6,7 @@ from app import ask
 def test_ask_prints_input_and_output_token_counts(monkeypatch, capsys):
     response = SimpleNamespace(
         text="Respuesta",
-        usage_metadata=SimpleNamespace(prompt_token_count=12, response_token_count=7),
+        usage_metadata=SimpleNamespace(prompt_token_count=12, candidates_token_count=7),
     )
 
     class FakeModels:
