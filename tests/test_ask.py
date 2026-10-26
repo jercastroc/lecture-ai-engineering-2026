@@ -26,8 +26,8 @@ def test_ask_prints_input_and_output_token_counts(monkeypatch, capsys):
 
     assert ask.ask("Pregunta") == "Respuesta"
     assert capsys.readouterr().out.splitlines() == [
-        "[response time] 0.250s",
-        "[tokens] input=12, output=7",
+        "[tiempo de respuesta] 0.250s",
+        "[tokens] entrada=12, salida=7",
     ]
 
 
@@ -54,4 +54,4 @@ def test_ask_prints_response_time_when_request_fails(monkeypatch, capsys):
     else:
         raise AssertionError("ask should propagate request errors")
 
-    assert capsys.readouterr().out.strip() == "[response time] 2.500s"
+    assert capsys.readouterr().out.strip() == "[tiempo de respuesta] 2.500s"

@@ -1,24 +1,24 @@
-# 第1回 解答
+# Respuesta de la clase 1
 
-## 演習
+## Práctica
 
-- 講座に固有の質問（宿題の3レベル）へのモデルの回答（要約でよい）：講座の教材を参照していないため確言できないとしたうえで、一般的な難易度（初級・中級・上級）などの3段階を推測して説明した。
-- 用語集の正しい意味と比べて気づいたこと：用語集では「基礎（講義内容の確認）」「実装（自分でコードを書く）」「発展（調査や試行）」の3段階で、どれか1つに取り組めば宿題は完了。モデルは一般的な難易度を答えており、講座固有の定義を知らないことが分かった。
-- 表示できたトークン数（入力 / 出力）：21 / 489（演習での初回実行）
+- Respuesta del modelo a la pregunta específica del curso sobre los tres niveles (resumen): dijo que no tenía información de AIE2026 y pidió más contexto sobre la institución y la materia.
+- Diferencias con la definición correcta del glosario: el glosario define los niveles como «Básico (repasar el contenido de la clase)», «Implementación (escribir código por cuenta propia)» y «Avanzado (investigar o experimentar)». Basta con completar uno. El modelo dio una respuesta general y no conocía la definición específica del curso.
+- Tokens mostrados (entrada / salida): 19 / 162.
 
-## 宿題
+## Tarea
 
-- 取り組んだレベル：発展
-- やったこと：`app/ask.py` に応答時間の計測を追加し、質問2種類を `gemini-3.5-flash-lite` と `gemini-3.8-flash` で実行して、応答時間とトークン数を比較した。
-- 結果：
+- Nivel elegido: Avanzado.
+- Qué hice: añadí la medición del tiempo de respuesta a `app/ask.py` y ejecuté dos preguntas con `gemini-3.5-flash-lite` y `gemini-3.8-flash` para comparar tiempos y tokens.
+- Resultados:
 
-	| 質問 | モデル | 結果 |
-	|---|---|---|
-	| LoRAとは何ですか？ | gemini-3.5-flash-lite | 2.663秒、入力7 / 出力535トークン |
-	| 宿題の「3レベル」とは何ですか？ | gemini-3.5-flash-lite | 3.110秒、入力21 / 出力594トークン |
-	| LoRAとは何ですか？ | gemini-3.8-flash | 503（モデル混雑）。応答時間・トークン数は取得できず |
-	| 宿題の「3レベル」とは何ですか？ | gemini-3.8-flash | 503（モデル混雑）。応答時間・トークン数は取得できず |
+  | Pregunta | Modelo | Resultado |
+  |---|---|---|
+  | ¿Qué es LoRA? | gemini-3.5-flash-lite | 2,754 s; entrada 7 / salida 593 tokens |
+  | ¿Cuáles son los tres niveles de la tarea? | gemini-3.5-flash-lite | 1,396 s; entrada 19 / salida 162 tokens |
+  | ¿Qué es LoRA? | gemini-3.8-flash | La nueva ejecución sigue en curso; registrar el resultado cuando termine. |
+  | ¿Cuáles son los tres niveles de la tarea? | gemini-3.8-flash | Pendiente de ejecutar tras completar la solicitud anterior. |
 
-	`gemini-3.5-flash-lite` では2つの質問に回答があり、どちらも出力が長く、宿題の質問はLoRAの質問より応答時間・出力トークン数が多かった。各条件1回ずつのため、一般的な性能差とは言えない。`gemini-3.8-flash` は2回とも503となり比較できなかった。
-- 気づき・疑問：教材に記載された無料枠の目安では、`gemini-3.5-flash-lite` は15リクエスト/分・500/日、`gemini-3.8-flash` は5/分・約10〜20/日。実測でも後者は混雑による503となり、利用できる回数が少ないモデルでは、失敗も考慮して試行回数を抑える必要がある。実際の上限は変動するため、AI Studioで確認する。
-- モデル：`gemini-3.5-flash-lite`、`gemini-3.8-flash`
+  `gemini-3.5-flash-lite` respondió a ambas preguntas. En esta ejecución, LoRA produjo una respuesta más larga y tardó más que la pregunta específica del curso. Cada combinación se ejecutó una sola vez, por lo que no demuestra una diferencia general de rendimiento.
+- Observaciones y preguntas: los límites gratuitos indicados en el material son 15 solicitudes por minuto y 500 al día para `gemini-3.5-flash-lite`, y 5 por minuto y aproximadamente 10–20 al día para `gemini-3.8-flash`. Los límites reales pueden cambiar; deben comprobarse en AI Studio. Anotaré también los fallos tal como ocurran.
+- Modelos usados: `gemini-3.5-flash-lite` y `gemini-3.8-flash`.
