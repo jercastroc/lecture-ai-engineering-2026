@@ -1,4 +1,4 @@
-"""Pruebas de herramientas que no llaman al LLM ni necesitan una clave de API."""
+"""ツールのテスト（LLMもAPIキーも使わない）。"""
 
 import json
 
@@ -11,7 +11,7 @@ def test_glossary_ids_are_unique_and_related_links_exist():
     assert len(ids) == len(set(ids))
     for t in terms:
         for r in t["related"]:
-            assert r in ids, f"ID relacionado inexistente en {t['id']}: {r}"
+            assert r in ids, f"{t['id']} の related に存在しない id: {r}"
 
 
 def test_search_finds_term_by_name_and_alias():
@@ -40,9 +40,9 @@ def test_lecture_summary():
 
 
 def test_default_question_of_lecture1_is_answerable_from_glossary():
-    """La pregunta predeterminada de la clase 1 se puede responder desde el glosario."""
+    """第1回の既定の質問（app.ask）は、第3回のエージェントが用語集で正しく答えられること。"""
     from app.ask import DEFAULT_QUESTION
 
-    assert "tres niveles" in DEFAULT_QUESTION
+    assert "3レベル" in DEFAULT_QUESTION
     hits = json.loads(tools.search_glossary("3レベル"))
     assert hits[0]["term"] == "宿題の3レベル"
