@@ -308,7 +308,16 @@ def generate_answers(cases: list[dict], wait: float = 1.0) -> list[dict]:
     model = build_model()
     print(f"回答を生成中 {len(cases)} 件 ", end="", flush=True)
     for case in cases:
-        result = agent.run_sync(case["question"], model=model)
+        for attempt in range(5):
+            try:
+                result = agent.run_sync(case["question"], model=model)
+                break
+            except ModelHTTPError as e:
+                # 429（レート制限）と 503（混雑）は少し待てば通ることが多い
+                if e.status_code not in (429, 503) or attempt == 4:
+                    raise
+                print(f"（{e.status_code}: 60 秒待って再試行）", end="", flush=True)
+                time.sleep(60)
         case["answer"] = str(result.output)
         print(".", end="", flush=True)
         time.sleep(wait)
