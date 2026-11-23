@@ -40,3 +40,17 @@ def test_neighbor_pages_say_which_hit_they_come_from():
 def test_zero_keeps_normal_search():
     hits = [PAGES[4]]
     assert add_neighbors(hits, PAGES, 0) == hits
+
+
+def test_graph_uses_plain_search_for_its_entry_points(monkeypatch):
+    from app import retrieval
+
+    calls = []
+
+    def fake_search(query, neighbors=1):
+        calls.append(neighbors)
+        return []
+
+    monkeypatch.setattr(retrieval, "search", fake_search)
+    retrieval.search_graph("LoRA")
+    assert calls == [0]

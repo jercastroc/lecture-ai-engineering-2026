@@ -124,8 +124,8 @@ def open_index(path: Path):
         db.close()
 
 
-def search(query: str) -> list[dict]:
-    """質問を埋め込み、近いページを最大RAG_TOP_K件返す。"""
+def search(query: str, neighbors: int = RAG_NEIGHBORS) -> list[dict]:
+    """質問を埋め込み、近いページを最大RAG_TOP_K件返す。neighbors > 0 なら前後のページも足す。"""
     if not isinstance(query, str) or not query.strip():
         raise ValueError("検索語が空です。")
     with open_index(RAG_DB) as db:
@@ -136,14 +136,14 @@ def search(query: str) -> list[dict]:
             FROM chunks ORDER BY distance, page_id LIMIT ?
         """, (sqlite_vec.serialize_float32(vector), RAG_TOP_K))
         hits = [dict(row) for row in rows]
-        if RAG_NEIGHBORS <= 0:
+        if neighbors <= 0:
             return hits
         # 前後のページは、同じ検索DBの中から資料・ページ番号の順で探す
         pages = [dict(row) for row in db.execute("""
             SELECT page_id, document_id, lecture, document_title, section, title, page, content
             FROM chunks ORDER BY document_id, page
         """)]
-    return add_neighbors(hits, pages)
+    return add_neighbors(hits, pages, neighbors)
 
 
 def add_neighbors(hits: list[dict], pages: list[dict], n: int = RAG_NEIGHBORS) -> list[dict]:
@@ -185,7 +185,8 @@ def search_graph(query: str) -> dict:
             adjacent[a].add(b)
             adjacent[b].add(a)
 
-    seeds = [hit for hit in search(query) if hit["page_id"] in pages][:min(GRAPH_START_K, GRAPH_MAX_RESULTS)]
+    # Graph は自分で前後ページをたどるので、入口は元の検索結果（距離付き）だけを使う
+    seeds = [hit for hit in search(query, neighbors=0) if hit["page_id"] in pages][:min(GRAPH_START_K, GRAPH_MAX_RESULTS)]
     seed_ids = {seed["page_id"] for seed in seeds}
     results, candidates = [], {}
     for rank, seed in enumerate(seeds):
