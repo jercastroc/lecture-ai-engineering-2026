@@ -16,7 +16,7 @@ import sqlite_vec
 
 from app.config import (
     EMBEDDING_DIMENSIONS, EMBEDDING_MAX_TOKENS, EMBEDDING_MODEL,
-    RAG_DB, RAG_DOCUMENT_IDS, RAG_SOURCE, RAG_TOP_K, RAG_TREE, get_api_key,
+    RAG_DB, RAG_DOCUMENT_IDS, RAG_NEIGHBORS, RAG_SOURCE, RAG_TOP_K, RAG_TREE, get_api_key,
     RAG_GRAPH, GRAPH_START_K, GRAPH_HOPS, GRAPH_MAX_RESULTS,
 )
 
@@ -135,7 +135,41 @@ def search(query: str) -> list[dict]:
                    vec_distance_cosine(embedding, ?) AS distance
             FROM chunks ORDER BY distance, page_id LIMIT ?
         """, (sqlite_vec.serialize_float32(vector), RAG_TOP_K))
-        return [dict(row) for row in rows]
+        hits = [dict(row) for row in rows]
+        if RAG_NEIGHBORS <= 0:
+            return hits
+        # 前後のページは、同じ検索DBの中から資料・ページ番号の順で探す
+        pages = [dict(row) for row in db.execute("""
+            SELECT page_id, document_id, lecture, document_title, section, title, page, content
+            FROM chunks ORDER BY document_id, page
+        """)]
+    return add_neighbors(hits, pages)
+
+
+def add_neighbors(hits: list[dict], pages: list[dict], n: int = RAG_NEIGHBORS) -> list[dict]:
+    """検索で当たった各ページの直後に、同じ資料の前後 n ページを足す。
+
+    説明が前後のスライドに続いていることがあるので、そのページも根拠の候補にする。
+    別の資料にはまたがらない。すでに結果にあるページは重ねて入れない。
+    足したページには neighbor_of（どのページの隣か）を付ける。
+    """
+    if n <= 0:
+        return hits
+    position = {page["page_id"]: i for i, page in enumerate(pages)}
+    seen = {hit["page_id"] for hit in hits}
+    results = []
+    for hit in hits:
+        results.append(hit)
+        i = position.get(hit["page_id"])
+        if i is None:
+            continue
+        for j in [*range(i - n, i), *range(i + 1, i + n + 1)]:
+            if 0 <= j < len(pages):
+                page = pages[j]
+                if page["document_id"] == hit["document_id"] and page["page_id"] not in seen:
+                    seen.add(page["page_id"])
+                    results.append({**page, "neighbor_of": hit["page_id"]})
+    return results
 
 
 def search_graph(query: str) -> dict:
@@ -207,5 +241,5 @@ if __name__ == "__main__":
         print(f"講義: {result['document_title']}")
         print(f"章: {result['section']}")
         print(f"タイトル: {result['title']}")
-        print(f"ページ: {result['page']}")
+        print(f"ページ: {result['page']}" + (f"（{result['neighbor_of']} の隣）" if "neighbor_of" in result else ""))
         print(f"\n{result['content']}")
